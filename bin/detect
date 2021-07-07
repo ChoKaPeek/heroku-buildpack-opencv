@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+echo "OpenCV"
+exit 0

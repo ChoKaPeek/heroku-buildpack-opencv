@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# bin/compile <build-dir> <cache-dir>
+
+# fail fast
+set -eo pipefail
+
+# parse params
+BUILD_DIR=$1
+CACHE_DIR=$2
+
+title() {
+  echo "-----> $*"
+}
+
+subtitle() {
+  echo "       $*"
+}
+
+shopt -s extglob
+
+if [ $(uname) == Darwin ]; then
+    sed() { command sed -l "$@"; }
+else
+    sed() { command sed -u "$@"; }
+fi
+
+# Does some serious copying.
+deep-cp() {
+  declare source="$1" target="$2"
+
+  mkdir -p "$target"
+
+  # cp doesn't like being called without source params,
+  # so make sure they expand to something first.
+  # subshell to avoid surprising caller with shopts.
+  (
+    shopt -s nullglob dotglob
+    set -- "$source"/!(tmp|.|..)
+    [[ $# == 0 ]] || cp -a "$@" "$target"
+  )
+}
+
+# Does some serious moving.
+deep-mv() {
+  deep-cp "$1" "$2"
+  deep-rm "$1"
+}
+
+# Does some serious deleting.
+deep-rm() {
+  # subshell to avoid surprising caller with shopts.
+  (
+    shopt -s dotglob
+    rm -rf "$1"/!(tmp|.|..)
+  )
+}
+
+# Download and unpack sources
+title "Caching sources..."
+mkdir -p $CACHE_DIR
+cd $CACHE_DIR
+if [ ! -f opencv.zip ]; then
+  wget -O opencv.zip https://github.com/opencv/opencv/archive/master.zip
+else
+  subtitle "opencv already in cache"
+fi
+if [ ! -f opencv_contrib.zip ]; then
+  wget -O opencv_contrib.zip https://github.com/opencv/opencv_contrib/archive/master.zip
+else
+  subtitle "opencv_contrib already in cache"
+fi
+cd -
+
+title "Unarchiving sources..."
+unzip $CACHE_DIR/opencv.zip
+unzip $CACHE_DIR/opencv_contrib.zip
+
+title "Building sources..."
+# Create build directory and switch into it
+mkdir -p build && cd build
+
+# Configure (remove the option if you don't want opencv_contrib)
+cmake -DOPENCV_EXTRA_MODULES_PATH=../opencv_contrib-master/modules ../opencv-master
+
+# Build
+cmake --build .
+
+title "OpenCV installed."
