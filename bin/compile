@@ -59,6 +59,7 @@ deep-rm() {
 cmake_roots=($BUILD_DIR/.apt/usr/share/cmake-*)
 export CMAKE_ROOT="${cmake_roots[0]}"
 subtitle "$CMAKE_ROOT"
+tree $BUILD_DIR/.apt
 
 # Download and unpack sources
 title "Caching sources..."
