@@ -55,6 +55,11 @@ deep-rm() {
   )
 }
 
+# find and export path to cmake - installed via the apt buildpack
+cmake_roots=($BUILD_DIR/.apt/usr/share/cmake-*)
+export CMAKE_ROOT="${cmake_roots[0]}"
+subtitle "$CMAKE_ROOT"
+
 # Download and unpack sources
 title "Caching sources..."
 mkdir -p $CACHE_DIR
