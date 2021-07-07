@@ -69,11 +69,18 @@ if [ ! -f opencv_contrib.zip ]; then
 else
   subtitle "opencv_contrib already in cache"
 fi
-cd -
 
 title "Unarchiving sources..."
-unzip $CACHE_DIR/opencv.zip
-unzip $CACHE_DIR/opencv_contrib.zip
+if [ ! -d opencv-master ]; then
+  unzip opencv.zip
+else
+  subtitle "opencv already unarchived"
+fi
+if [ ! -d opencv_contrib-master ]; then
+  unzip opencv_contrib.zip
+else
+  subtitle "opencv_contrib already unarchived"
+fi
 
 title "Building sources..."
 # Create build directory and switch into it
